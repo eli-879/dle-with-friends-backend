@@ -13,6 +13,7 @@ public class GameHub : Hub
     public async Task SendGuess(string roomId)
     {
         await Clients.Group(roomId).SendAsync("ReceiveGuess");
+
     }
 
     public async Task CreateRoom()
