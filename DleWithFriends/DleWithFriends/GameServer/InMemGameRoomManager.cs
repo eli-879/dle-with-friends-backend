@@ -1,4 +1,4 @@
-﻿
+﻿using DleWithFriends.Factory;
 using DleWithFriends.Models;
 using System.Security.Cryptography;
 using System.Text;
@@ -9,7 +9,7 @@ namespace DleWithFriends.GameServer
     {
         private readonly Dictionary<string, GameRoom> gameRooms = [];
 
-        public Task<string> CreateRoomAsync()
+        public Task<string> CreateRoomAsync(Player roomOwner)
         {
             var roomKey = GenerateRoomKey();
             var tries = 3;
@@ -26,10 +26,34 @@ namespace DleWithFriends.GameServer
                     tries--;
                 }
             }
+            var gameRoom = new GameRoom(roomKey);
+            gameRoom.Players = [roomOwner];
 
-            gameRooms[roomKey] = new GameRoom(roomKey);
+            gameRooms[roomKey] = gameRoom;
 
             return Task.FromResult(roomKey);
+        }
+
+        public Task<List<Player>> GetPlayersAsync(string roomId)
+        {
+            if (gameRooms.TryGetValue(roomId, out var gameRoom))
+            {
+                return Task.FromResult(gameRoom.Players);
+            }
+            else
+            {
+                return Task.FromResult(new List<Player>());
+            }
+        }
+        public Task<bool> AddPlayerToRoom(string roomId, Player newPlayer)
+        {
+            if (gameRooms.TryGetValue(roomId, out var gameRoom))
+            {
+                gameRoom.Players.Add(newPlayer);
+                return Task.FromResult(true);
+            }
+
+            return Task.FromResult(false);
         }
 
         private static string GenerateRoomKey(int length = 5)
@@ -50,5 +74,6 @@ namespace DleWithFriends.GameServer
 
             return result.ToString();
         }
+
     }
 }

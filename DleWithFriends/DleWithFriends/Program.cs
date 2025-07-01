@@ -1,5 +1,4 @@
 using DleWithFriends.GameServer;
-using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 

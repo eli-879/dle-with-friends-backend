@@ -15,7 +15,7 @@ namespace DleWithFriends.GameServer
         }
 
 
-        public async Task<string> CreateRoomAsync()
+        public async Task<string> CreateRoomAsync(Player roomOwner)
         {
             var roomKey = GenerateRoomKey();
             var tries = 3;
@@ -62,5 +62,19 @@ namespace DleWithFriends.GameServer
             return result.ToString();
         }
 
+        public Task<List<Player>> GetPlayersAsync(string roomId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> AddPlayerToRoom(string roomId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> AddPlayerToRoom(string roomId, Player newPlayer)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

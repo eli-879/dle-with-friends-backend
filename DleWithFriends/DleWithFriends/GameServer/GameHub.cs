@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using DleWithFriends.Factory;
+using Microsoft.AspNetCore.SignalR;
 
 namespace DleWithFriends.GameServer;
 
@@ -13,19 +14,22 @@ public class GameHub : Hub
     public async Task SendGuess(string roomId)
     {
         await Clients.Group(roomId).SendAsync("ReceiveGuess");
-
     }
 
-    public async Task CreateRoom()
+    public async Task CreateRoom(string roomOwnerNickname)
     {
-        var gameRoom = await _gameRoomManager.CreateRoomAsync();
+        var roomOwner = PlayerFactory.CreatePlayer(roomOwnerNickname);
+
+        var gameRoom = await _gameRoomManager.CreateRoomAsync(roomOwner);
         Console.WriteLine($"New room created! {gameRoom}");
         await Groups.AddToGroupAsync(Context.ConnectionId, gameRoom);
         await Clients.Group(gameRoom).SendAsync("SendNewRoom", gameRoom);
     }
 
-    public async Task JoinRoom(string roomId)
+    public async Task JoinRoom(string roomId, string playerNickname)
     {
+        var newPlayer = PlayerFactory.CreatePlayer(playerNickname);
+        await _gameRoomManager.AddPlayerToRoom(roomId, newPlayer);
         await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
         await Clients.Group(roomId).SendAsync("UserJoined", Context.ConnectionId);
     }
@@ -35,6 +39,13 @@ public class GameHub : Hub
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
         await Clients.Group(roomId).SendAsync("UserLeft", Context.ConnectionId);
     }
+
+    public async Task GetPlayers(string roomId)
+    {
+        var players = await _gameRoomManager.GetPlayersAsync(roomId);
+        await Clients.Group(roomId).SendAsync("ReceivePlayers", players);
+    }
+
 
     public async Task SendChatMessage(string roomId, string user, string message)
     {
