@@ -45,12 +45,22 @@ namespace DleWithFriends.GameServer
                 return Task.FromResult(new List<Player>());
             }
         }
+
         public Task<bool> AddPlayerToRoom(string roomId, Player newPlayer)
         {
             if (gameRooms.TryGetValue(roomId, out var gameRoom))
             {
                 gameRoom.Players.Add(newPlayer);
                 return Task.FromResult(true);
+            }
+
+            return Task.FromResult(false);
+        }
+        public Task<bool> IsPlayerAlreadyInRoom(string roomId, string nickname)
+        {
+            if (gameRooms.TryGetValue(roomId, out var gameRoom))
+            {
+                return Task.FromResult(gameRoom.Players.Any(p => p.Name.Equals(nickname, StringComparison.OrdinalIgnoreCase)));
             }
 
             return Task.FromResult(false);
@@ -74,6 +84,5 @@ namespace DleWithFriends.GameServer
 
             return result.ToString();
         }
-
     }
 }

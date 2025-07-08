@@ -5,7 +5,7 @@ using System.Text;
 
 namespace DleWithFriends.GameServer
 {
-    public class RedisGameRoomManager : IGameRoomManager
+    public class RedisGameRoomManager 
     {
         private readonly IDatabase _db;
 

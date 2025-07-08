@@ -4,5 +4,6 @@
     {
         public string RoomId { get; set; } = roomId;
         public List<Player> Players { get; set; } = [];
+        public string TargetWord { get; set; } = string.Empty;
     }
 }

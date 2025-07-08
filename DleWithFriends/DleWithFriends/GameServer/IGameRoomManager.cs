@@ -10,5 +10,7 @@ namespace DleWithFriends.GameServer
 
         public Task<bool> AddPlayerToRoom(string roomId, Player newPlayer);
 
+        public Task<bool> IsPlayerAlreadyInRoom(string roomId, string nickname);
+
     }
 }

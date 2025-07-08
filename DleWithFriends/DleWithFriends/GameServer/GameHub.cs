@@ -28,10 +28,28 @@ public class GameHub : Hub
 
     public async Task JoinRoom(string roomId, string playerNickname)
     {
+        if (await _gameRoomManager.IsPlayerAlreadyInRoom(roomId, playerNickname))
+        {
+            Console.WriteLine($"Player {playerNickname} is already in room {roomId}");
+            
+        }
+
         var newPlayer = PlayerFactory.CreatePlayer(playerNickname);
         await _gameRoomManager.AddPlayerToRoom(roomId, newPlayer);
         await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
         await Clients.Group(roomId).SendAsync("UserJoined", Context.ConnectionId);
+    }
+
+    public async Task StartGame(string roomId)
+    {
+        await Clients.Group(roomId).SendAsync("GameStarted", Context.ConnectionId);
+    }
+
+    public async Task GetGameState(string roomId)
+    {
+        Console.WriteLine($"Requesting game state for room {roomId}");
+        var players = await _gameRoomManager.GetPlayersAsync(roomId);
+        await Clients.Group(roomId).SendAsync("ReceiveGameState", players);
     }
 
     public async Task LeaveRoom(string roomId)
@@ -42,6 +60,7 @@ public class GameHub : Hub
 
     public async Task GetPlayers(string roomId)
     {
+        Console.WriteLine($"Requesting players for room {roomId}");
         var players = await _gameRoomManager.GetPlayersAsync(roomId);
         await Clients.Group(roomId).SendAsync("ReceivePlayers", players);
     }
