@@ -12,5 +12,7 @@ namespace DleWithFriends.GameServer
 
         public Task<bool> IsPlayerAlreadyInRoom(string roomId, string nickname);
 
+        public Task<List<Player>> ValidateGuess(string roomId, string nickname, string guess);
+
     }
 }

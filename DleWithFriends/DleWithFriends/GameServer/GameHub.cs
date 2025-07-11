@@ -11,9 +11,11 @@ public class GameHub : Hub
     {
         _gameRoomManager = gameRoomManager;
     }
-    public async Task SendGuess(string roomId)
+    public async Task SendGuess(string roomId, string nickname, string guess)
     {
-        await Clients.Group(roomId).SendAsync("ReceiveGuess");
+        Console.WriteLine($"Guess received for roomId {roomId} - {guess}");
+        var players = await _gameRoomManager.ValidateGuess(roomId, nickname, guess);
+        await Clients.Group(roomId).SendAsync("ReceiveGuess", players);
     }
 
     public async Task CreateRoom(string roomOwnerNickname)

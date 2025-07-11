@@ -56,6 +56,7 @@ namespace DleWithFriends.GameServer
 
             return Task.FromResult(false);
         }
+
         public Task<bool> IsPlayerAlreadyInRoom(string roomId, string nickname)
         {
             if (gameRooms.TryGetValue(roomId, out var gameRoom))
@@ -66,7 +67,30 @@ namespace DleWithFriends.GameServer
             return Task.FromResult(false);
         }
 
-        private static string GenerateRoomKey(int length = 5)
+        public Task<List<Player>> ValidateGuess(string roomId, string nickname, string guess)
+        {
+            if (!gameRooms.TryGetValue(roomId, out var gameRoom))
+            {
+                return Task.FromResult(new List<Player>());
+            }
+
+            var guessFeedback = CheckGuess(gameRoom.TargetWord, guess);
+
+            var player = gameRoom.Players.FirstOrDefault(p => p.Name == nickname);
+
+            if (player == null)
+            {
+                return Task.FromResult(new List<Player>());
+            }
+
+            player.GameState.GuessFeedbacks.Add(guessFeedback);
+            player.GameState.Guesses.Add(guess);
+
+            return Task.FromResult(gameRoom.Players);
+
+        }
+
+        private string GenerateRoomKey(int length = 5)
         {
             const string validChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             StringBuilder result = new StringBuilder(length);
@@ -83,6 +107,53 @@ namespace DleWithFriends.GameServer
             }
 
             return result.ToString();
+        }
+
+        private List<GuessFeedback> CheckGuess(string targetWord, string guess)
+        {
+            var guessAsList = guess.ToList();
+            var targetWordAsList = targetWord.ToList();
+            var feedback = new List<GuessFeedback>() 
+            { 
+                GuessFeedback.Incorrect,
+                GuessFeedback.Incorrect,
+                GuessFeedback.Incorrect,
+                GuessFeedback.Incorrect,
+                GuessFeedback.Incorrect
+            };
+
+            foreach (var item in guessAsList.Select((value, i) => new { value, i }))
+            {
+                var letter = item.value;
+                var index = item.i;
+
+                if (targetWordAsList[index] == letter)
+                {
+                    feedback[index] = GuessFeedback.Correct;
+                }
+            }
+
+
+            foreach (var item in guessAsList.Select((value, i) => new { value, i})) {
+                var letter = item.value;
+                var index = item.i;
+
+                if (targetWordAsList.Contains(letter))
+                {
+                    var locations = targetWordAsList.Select((value, i) => new { value, i }).Where(l => letter == l.value);
+                    
+                    foreach (var location in locations)
+                    {
+                        if (feedback[location.i] != GuessFeedback.Correct && feedback[index] != GuessFeedback.Correct)
+                        {
+                            feedback[index] = GuessFeedback.Misplaced;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return feedback;
         }
     }
 }
